@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI 设计预览 - 旅行轨迹记录平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 
+                         'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .preview-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .preview-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+
+        .preview-image {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><circle cx="100" cy="100" r="50" fill="rgba(255,255,255,0.1)"/><circle cx="300" cy="200" r="80" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .preview-content {
+            padding: 2rem;
+        }
+
+        .preview-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .preview-description {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-features li {
+            padding: 0.5rem 0;
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .preview-features li::before {
+            content: '✓';
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 3rem;
+            opacity: 0.9;
+        }
+
+        .footer p {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+
+        .footer-links a:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: white;
+        }
+
+        .tech-stack {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .tech-stack h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .tech-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .tech-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .preview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header animate">
+            <h1>🗺️ 旅行轨迹记录平台</h1>
+            <p>高保真 UI 设计预览</p>
+        </div>
+
+        <div class="tech-stack animate" style="animation-delay: 0.1s;">
+            <h3>技术栈</h3>
+            <div class="tech-badges">
+                <span class="tech-badge">Next.js 16</span>
+                <span class="tech-badge">React 19</span>
+                <span class="tech-badge">TypeScript</span>
+                <span class="tech-badge">Supabase</span>
+                <span class="tech-badge">PostgreSQL + PostGIS</span>
+                <span class="tech-badge">Tailwind CSS v4</span>
+                <span class="tech-badge">shadcn/ui</span>
+            </div>
+        </div>
+
+        <div class="preview-grid">
+            <!-- 首页卡片 -->
+            <div class="preview-card animate" style="animation-delay: 0.2s;">
+                <div class="preview-image">
+                    🏠
+                </div>
+                <div class="preview-content">
+                    <h2 class="preview-title">首页设计</h2>
+                    <p class="preview-description">
+                        面向访客的展示页面，展示旅行者的个人简介、旅行统计、精选文章和赞助墙。
+                    </p>
+                    <ul class="preview-features">
+                        <li>Hero 区域（头像 + Slogan）</li>
+                        <li>数据统计卡片（公里数、天数、城市数）</li>
+                        <li>关于我区域</li>
+                        <li>旅行初心展示</li>
+                        <li>精选文章列表</li>
+                        <li>赞助者墙</li>
+                        <li>响应式设计</li>
+                    </ul>
+                    <a href="index.html" class="btn" target="_blank">查看首页 →</a>
+                </div>
+            </div>
+
+            <!-- 后台仪表盘卡片 -->
+            <div class="preview-card animate" style="animation-delay: 0.3s;">
+                <div class="preview-image">
+                    📊
+                </div>
+                <div class="preview-content">
+                    <h2 class="preview-title">后台仪表盘</h2>
+                    <p class="preview-description">
+                        作者/管理员后台管理界面，提供数据概览、内容管理、互动管理等功能。
+                    </p>
+                    <ul class="preview-features">
+                        <li>侧边栏导航（多级菜单）</li>
+                        <li>数据统计卡片（实时更新）</li>
+                        <li>访问趋势图表</li>
+                        <li>快捷操作入口</li>
+                        <li>最新文章管理</li>
+                        <li>最近活动时间线</li>
+                        <li>深色侧边栏设计</li>
+                    </ul>
+                    <a href="dashboard.html" class="btn" target="_blank">查看仪表盘 →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer animate" style="animation-delay: 0.4s;">
+            <p>基于 PRD 文档 (travel-prd-v3-optimized.md) 设计</p>
+            <div class="footer-links">
+                <a href="ANALYSIS.md" target="_blank">📊 业务逻辑分析</a>
+                <a href="IMPLEMENTATION_GUIDE.md" target="_blank">📖 实施指南</a>
+                <a href="README.md" target="_blank">📝 项目文档</a>
+                <a href="travel-supabase-schema-v3-improved.sql" target="_blank">💾 数据库脚本</a>
+            </div>
+            <p style="margin-top: 2rem; font-size: 0.875rem;">
+                © 2024 旅行轨迹记录平台 · 所有文件保存在 cc2055 目录
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 添加动画类
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.preview-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${0.2 + index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>
