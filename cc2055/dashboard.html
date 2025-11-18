@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 - 旅行轨迹记录平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --sidebar-bg: #1a1a2e;
+            --sidebar-hover: #16213e;
+            --content-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e1e8ed;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 
+                         'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: var(--content-bg);
+            color: var(--text-primary);
+        }
+
+        /* 布局 */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+
+        .menu-section {
+            margin-bottom: 2rem;
+        }
+
+        .menu-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .menu-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .menu-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: var(--danger);
+            padding: 0.125rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        /* 顶部栏 */
+        .topbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-search {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .topbar-icon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .topbar-icon:hover {
+            color: var(--primary);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .user-menu:hover {
+            background: var(--light);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 内容区域 */
+        .content {
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.primary { background: rgba(52, 152, 219, 0.1); color: var(--primary); }
+        .stat-icon.success { background: rgba(46, 204, 113, 0.1); color: var(--success); }
+        .stat-icon.warning { background: rgba(243, 156, 18, 0.1); color: var(--warning); }
+        .stat-icon.danger { background: rgba(231, 76, 60, 0.1); color: var(--danger); }
+
+        .stat-trend {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .stat-trend.up {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+        }
+
+        .stat-trend.down {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* 内容卡片 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--light);
+        }
+
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--light);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        /* 徽章 */
+        .badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-primary { background: rgba(52, 152, 219, 0.1); color: var(--primary); }
+        .badge-success { background: rgba(46, 204, 113, 0.1); color: var(--success); }
+        .badge-warning { background: rgba(243, 156, 18, 0.1); color: var(--warning); }
+        .badge-danger { background: rgba(231, 76, 60, 0.1); color: var(--danger); }
+
+        /* 快捷操作 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .quick-action-btn {
+            padding: 1.5rem;
+            background: var(--card-bg);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--primary);
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .quick-action-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 图表占位 */
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        /* 活动列表 */
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .topbar {
+                padding: 1rem;
+            }
+
+            .topbar-search {
+                display: none;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画 */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.4s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <span>🗺️</span>
+                    <span>旅行轨迹后台</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <div class="menu-section">
+                    <div class="menu-section-title">主菜单</div>
+                    <a href="#overview" class="menu-item active">
+                        <span class="menu-icon">📊</span>
+                        <span>数据概览</span>
+                    </a>
+                    <a href="#analytics" class="menu-item">
+                        <span class="menu-icon">📈</span>
+                        <span>数据分析</span>
+                    </a>
+                    <a href="#map" class="menu-item">
+                        <span class="menu-icon">🗺️</span>
+                        <span>轨迹地图</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-section-title">内容管理</div>
+                    <a href="#articles" class="menu-item">
+                        <span class="menu-icon">📝</span>
+                        <span>旅行文章</span>
+                        <span class="menu-badge">23</span>
+                    </a>
+                    <a href="#timeline" class="menu-item">
+                        <span class="menu-icon">⏱️</span>
+                        <span>时光轴</span>
+                        <span class="menu-badge">156</span>
+                    </a>
+                    <a href="#photos" class="menu-item">
+                        <span class="menu-icon">📷</span>
+                        <span>照片墙</span>
+                        <span class="menu-badge">892</span>
+                    </a>
+                    <a href="#topics" class="menu-item">
+                        <span class="menu-icon">📚</span>
+                        <span>专题管理</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-section-title">互动管理</div>
+                    <a href="#comments" class="menu-item">
+                        <span class="menu-icon">💬</span>
+                        <span>评论管理</span>
+                        <span class="menu-badge">12</span>
+                    </a>
+                    <a href="#messages" class="menu-item">
+                        <span class="menu-icon">✉️</span>
+                        <span>留言板</span>
+                        <span class="menu-badge">5</span>
+                    </a>
+                    <a href="#sponsors" class="menu-item">
+                        <span class="menu-icon">💰</span>
+                        <span>赞助记录</span>
+                    </a>
+                    <a href="#followers" class="menu-item">
+                        <span class="menu-icon">👥</span>
+                        <span>粉丝列表</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-section-title">系统设置</div>
+                    <a href="#profile" class="menu-item">
+                        <span class="menu-icon">👤</span>
+                        <span>个人资料</span>
+                    </a>
+                    <a href="#settings" class="menu-item">
+                        <span class="menu-icon">⚙️</span>
+                        <span>系统设置</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部栏 -->
+            <div class="topbar">
+                <div class="topbar-search">
+                    <input type="text" class="search-input" placeholder="🔍 搜索文章、标签、城市...">
+                </div>
+                <div class="topbar-actions">
+                    <div class="topbar-icon">
+                        🔔
+                        <span class="notification-badge">5</span>
+                    </div>
+                    <div class="topbar-icon">💬</div>
+                    <div class="user-menu">
+                        <div class="user-avatar">JT</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.95rem;">旅行者</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">管理员</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 内容区域 -->
+            <div class="content">
+                <!-- 页面头部 -->
+                <div class="page-header animate-in">
+                    <div class="breadcrumb">
+                        <span>🏠 首页</span>
+                        <span>/</span>
+                        <span>数据概览</span>
+                    </div>
+                    <h1 class="page-title">数据概览</h1>
+                    <p class="page-subtitle">欢迎回来！这是你的旅行数据总览</p>
+                </div>
+
+                <!-- 统计卡片 -->
+                <div class="stats-grid animate-in">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">📝</div>
+                            <div class="stat-trend up">↑ 12%</div>
+                        </div>
+                        <div class="stat-value">1,234</div>
+                        <div class="stat-label">总文章数</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon success">👁️</div>
+                            <div class="stat-trend up">↑ 23%</div>
+                        </div>
+                        <div class="stat-value">45.6K</div>
+                        <div class="stat-label">总浏览量</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon warning">❤️</div>
+                            <div class="stat-trend up">↑ 8%</div>
+                        </div>
+                        <div class="stat-value">8,932</div>
+                        <div class="stat-label">总点赞数</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon danger">👥</div>
+                            <div class="stat-trend down">↓ 3%</div>
+                        </div>
+                        <div class="stat-value">567</div>
+                        <div class="stat-label">粉丝数量</div>
+                    </div>
+                </div>
+
+                <!-- 旅行统计 -->
+                <div class="stats-grid animate-in" style="animation-delay: 0.1s;">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">🚗</div>
+                        </div>
+                        <div class="stat-value">12,345 <span style="font-size: 1rem; color: var(--text-secondary);">km</span></div>
+                        <div class="stat-label">旅行总公里数</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon success">📅</div>
+                        </div>
+                        <div class="stat-value">365 <span style="font-size: 1rem; color: var(--text-secondary);">天</span></div>
+                        <div class="stat-label">旅行总天数</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon warning">🌍</div>
+                        </div>
+                        <div class="stat-value">50 <span style="font-size: 1rem; color: var(--text-secondary);">城市</span></div>
+                        <div class="stat-label">途径城市数</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon danger">📷</div>
+                        </div>
+                        <div class="stat-value">892</div>
+                        <div class="stat-label">上传照片数</div>
+                    </div>
+                </div>
+
+                <!-- 快捷操作 -->
+                <div class="card animate-in" style="animation-delay: 0.2s;">
+                    <div class="card-header">
+                        <h2 class="card-title">快捷操作</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <a href="#new-article" class="quick-action-btn">
+                                <div class="quick-action-icon">📝</div>
+                                <div style="font-weight: 600;">写新文章</div>
+                            </a>
+                            <a href="#new-timeline" class="quick-action-btn">
+                                <div class="quick-action-icon">⏱️</div>
+                                <div style="font-weight: 600;">发时光轴</div>
+                            </a>
+                            <a href="#upload-photo" class="quick-action-btn">
+                                <div class="quick-action-icon">📷</div>
+                                <div style="font-weight: 600;">上传照片</div>
+                            </a>
+                            <a href="#new-topic" class="quick-action-btn">
+                                <div class="quick-action-icon">📚</div>
+                                <div style="font-weight: 600;">创建专题</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <!-- 数据趋势 -->
+                    <div class="card animate-in" style="animation-delay: 0.3s;">
+                        <div class="card-header">
+                            <h2 class="card-title">访问趋势</h2>
+                            <div class="card-actions">
+                                <button class="btn btn-outline">7天</button>
+                                <button class="btn btn-outline">30天</button>
+                                <button class="btn btn-primary">90天</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-placeholder">
+                                📊 访问量趋势图
+                                <br>
+                                <small style="font-size: 0.875rem; opacity: 0.8;">（可接入 ECharts 或 Chart.js）</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 最近活动 -->
+                    <div class="card animate-in" style="animation-delay: 0.4s;">
+                        <div class="card-header">
+                            <h2 class="card-title">最近活动</h2>
+                            <a href="#" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.875rem;">查看全部</a>
+                        </div>
+                        <div class="card-body">
+                            <ul class="activity-list">
+                                <li class="activity-item">
+                                    <div class="activity-icon" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">
+                                        💬
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">收到新评论</div>
+                                        <div class="activity-meta">张三 评论了你的文章</div>
+                                        <div class="activity-meta">5 分钟前</div>
+                                    </div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-icon" style="background: rgba(231, 76, 60, 0.1); color: var(--danger);">
+                                        ❤️
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">收到新点赞</div>
+                                        <div class="activity-meta">李四 点赞了你的时光轴</div>
+                                        <div class="activity-meta">15 分钟前</div>
+                                    </div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-icon" style="background: rgba(52, 152, 219, 0.1); color: var(--primary);">
+                                        👥
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">新增粉丝</div>
+                                        <div class="activity-meta">王五 关注了你</div>
+                                        <div class="activity-meta">1 小时前</div>
+                                    </div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-icon" style="background: rgba(243, 156, 18, 0.1); color: var(--warning);">
+                                        💰
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">收到赞助</div>
+                                        <div class="activity-meta">赵六 赞助了 ¥50</div>
+                                        <div class="activity-meta">2 小时前</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最新文章 -->
+                <div class="card animate-in" style="animation-delay: 0.5s;">
+                    <div class="card-header">
+                        <h2 class="card-title">最新文章</h2>
+                        <div class="card-actions">
+                            <button class="btn btn-primary">
+                                ➕ 写新文章
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>文章标题</th>
+                                        <th>状态</th>
+                                        <th>分类</th>
+                                        <th>发布时间</th>
+                                        <th>浏览</th>
+                                        <th>点赞</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                                <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                                    🏔️
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 600;">朝圣之路：从川藏线到拉萨</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">西藏·拉萨</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-success">已发布</span></td>
+                                        <td>旅行日记</td>
+                                        <td>2024-01-15</td>
+                                        <td>1,234</td>
+                                        <td>89</td>
+                                        <td>
+                                            <button class="btn btn-outline" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                                <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                                    🏖️
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 600;">冬日海岛：三亚7天深度游</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">海南·三亚</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-success">已发布</span></td>
+                                        <td>城市印象</td>
+                                        <td>2024-01-08</td>
+                                        <td>892</td>
+                                        <td>67</td>
+                                        <td>
+                                            <button class="btn btn-outline" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                                <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                                    🏛️
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 600;">千年古都：西安历史文化探访</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">陕西·西安</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-warning">草稿</span></td>
+                                        <td>文化体验</td>
+                                        <td>2023-12-20</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>
+                                            <button class="btn btn-outline" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">继续编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                                <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                                    🌸
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 600;">风花雪月：大理古城慢生活</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">云南·大理</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-success">已发布</span></td>
+                                        <td>旅行日记</td>
+                                        <td>2023-12-10</td>
+                                        <td>1,023</td>
+                                        <td>78</td>
+                                        <td>
+                                            <button class="btn btn-outline" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                                <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                                    🚂
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 600;">丝路之旅：探访南疆风情</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">新疆·喀什</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-success">已发布</span></td>
+                                        <td>自然风光</td>
+                                        <td>2023-11-25</td>
+                                        <td>645</td>
+                                        <td>52</td>
+                                        <td>
+                                            <button class="btn btn-outline" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">编辑</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 菜单切换
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 模拟数据更新
+        function updateStats() {
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach(stat => {
+                const currentValue = parseInt(stat.textContent.replace(/[^0-9]/g, ''));
+                const newValue = currentValue + Math.floor(Math.random() * 10);
+                stat.textContent = newValue.toLocaleString();
+            });
+        }
+
+        // 每30秒更新一次统计数据（演示用）
+        // setInterval(updateStats, 30000);
+
+        // 响应式侧边栏切换
+        const sidebar = document.querySelector('.sidebar');
+        const toggleSidebar = () => {
+            sidebar.style.transform = sidebar.style.transform === 'translateX(0px)' ? 'translateX(-100%)' : 'translateX(0px)';
+        };
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    // 这里可以添加页面切换逻辑
+                    console.log('Navigate to:', href);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

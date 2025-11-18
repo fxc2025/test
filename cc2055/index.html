@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅行轨迹记录平台 - 记录旅途，分享精彩瞬间</title>
+    <meta name="description" content="个人旅行轨迹记录与分享平台，系统化记录旅行经历，自动生成旅行地图">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --dark-bg: #1a1a2e;
+            --light-bg: #f8f9fa;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 
+                         'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: #fff;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero 区域 */
+        .hero {
+            margin-top: 70px;
+            height: 600px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><path d="M0,300 Q300,200 600,300 T1200,300 L1200,600 L0,600 Z" fill="rgba(255,255,255,0.1)"/></svg>') no-repeat bottom;
+            background-size: cover;
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .hero-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: var(--shadow-lg);
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        /* 统计数据区 */
+        .stats-section {
+            padding: 4rem 2rem;
+            background: var(--light-bg);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        /* 关于我区域 */
+        .about-section {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+
+        .about-text p {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--light-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .about-image {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            color: white;
+        }
+
+        /* 旅行初心区域 */
+        .journey-section {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            font-weight: 700;
+        }
+
+        .journey-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .journey-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .journey-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .journey-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .journey-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .journey-card p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* 精选内容区 */
+        .content-section {
+            padding: 6rem 2rem;
+            background: var(--light-bg);
+        }
+
+        .content-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 2rem;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .article-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .article-image {
+            height: 220px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+        }
+
+        .article-content {
+            padding: 1.5rem;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .article-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .article-excerpt {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .article-stats {
+            display: flex;
+            gap: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .article-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 赞助者墙 */
+        .sponsors-section {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .sponsors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .sponsor-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--light-bg);
+            border-radius: 16px;
+            transition: transform 0.3s;
+        }
+
+        .sponsor-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .sponsor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .sponsor-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sponsor-amount {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 3rem 2rem 1.5rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar-container {
+                padding: 1rem;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+
+        /* 动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🗺️</span>
+                <span>旅行轨迹</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#home">首页</a></li>
+                <li><a href="#about">关于我</a></li>
+                <li><a href="#articles">文章</a></li>
+                <li><a href="#timeline">时光轴</a></li>
+                <li><a href="#map">轨迹地图</a></li>
+                <li><a href="#contact">联系</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <section class="hero" id="home">
+        <div class="hero-content animate-in">
+            <div class="hero-avatar">🧳</div>
+            <h1>旅行者的足迹</h1>
+            <p class="hero-subtitle">用脚步丈量世界，用文字记录感动</p>
+            <div class="hero-cta">
+                <a href="#articles" class="btn btn-primary">探索旅程</a>
+                <a href="#contact" class="btn btn-outline">关注我</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 统计数据区 -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card animate-in">
+                    <div class="stat-icon">🚗</div>
+                    <div class="stat-number">12,345</div>
+                    <div class="stat-label">旅行公里数</div>
+                </div>
+                <div class="stat-card animate-in">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-number">365</div>
+                    <div class="stat-label">旅行天数</div>
+                </div>
+                <div class="stat-card animate-in">
+                    <div class="stat-icon">🌍</div>
+                    <div class="stat-number">50</div>
+                    <div class="stat-label">途径城市</div>
+                </div>
+                <div class="stat-card animate-in">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-number">1,234</div>
+                    <div class="stat-label">发布文章</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于我区域 -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>关于我</h2>
+                    <p>
+                        你好，我是一名热爱旅行的记录者。从2020年开始，我决定用系统化的方式记录每一次旅行，
+                        不仅仅是为了留存记忆，更是为了分享路上的风景和故事。
+                    </p>
+                    <p>
+                        这个平台承载着我所有的旅行轨迹，每一个标记点都是一段难忘的经历。
+                        通过文字、照片和地图，我希望能够激发更多人踏上旅途，去发现这个世界的美好。
+                    </p>
+                    <p>
+                        旅行不仅仅是到达目的地，更是享受路上的每一刻。让我们一起，用心感受这个世界。
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">📱</a>
+                        <a href="#" class="social-link">📧</a>
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">📷</a>
+                    </div>
+                </div>
+                <div class="about-image">
+                    🏔️
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 旅行初心区域 -->
+    <section class="journey-section">
+        <div class="container">
+            <h2 class="section-title">为什么要旅行</h2>
+            <div class="journey-grid">
+                <div class="journey-card">
+                    <div class="journey-icon">🌅</div>
+                    <h3>发现美好</h3>
+                    <p>世界很大，每个角落都有独特的风景。走出去，用眼睛记录，用心感受，发现生活中被忽略的美好。</p>
+                </div>
+                <div class="journey-card">
+                    <div class="journey-icon">🎒</div>
+                    <h3>认识自己</h3>
+                    <p>旅行是一场向内的探索。在陌生的环境中，我们能够更好地认识自己，突破舒适区，成就更好的自己。</p>
+                </div>
+                <div class="journey-card">
+                    <div class="journey-icon">🤝</div>
+                    <h3>遇见朋友</h3>
+                    <p>路上总会遇见有趣的人，听他们的故事，分享彼此的经历。这些相遇让旅途更加丰富多彩。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 精选内容区 -->
+    <section class="content-section" id="articles">
+        <div class="container">
+            <h2 class="section-title" style="color: var(--text-dark);">精选内容</h2>
+            <div class="content-tabs">
+                <button class="tab-btn active">最新文章</button>
+                <button class="tab-btn">热门推荐</button>
+                <button class="tab-btn">时光轴</button>
+            </div>
+            <div class="content-grid">
+                <!-- 文章卡片 1 -->
+                <div class="article-card">
+                    <div class="article-image">🏔️</div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span>📅 2024-01-15</span>
+                            <span>📍 西藏·拉萨</span>
+                        </div>
+                        <h3 class="article-title">朝圣之路：从川藏线到拉萨的2000公里</h3>
+                        <p class="article-excerpt">
+                            从成都出发，沿着318国道一路向西。这条被称为"中国最美景观大道"的路线，
+                            用2000公里的距离，串联起了无数令人震撼的风景...
+                        </p>
+                        <div class="article-stats">
+                            <span>👁️ 1,234</span>
+                            <span>❤️ 89</span>
+                            <span>💬 23</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文章卡片 2 -->
+                <div class="article-card">
+                    <div class="article-image">🏖️</div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span>📅 2024-01-08</span>
+                            <span>📍 海南·三亚</span>
+                        </div>
+                        <h3 class="article-title">冬日海岛：三亚7天深度游</h3>
+                        <p class="article-excerpt">
+                            逃离北方的寒冷，来到温暖的海南岛。蓝天白云、碧海金沙，
+                            这是一场与冬季对抗的温暖之旅...
+                        </p>
+                        <div class="article-stats">
+                            <span>👁️ 892</span>
+                            <span>❤️ 67</span>
+                            <span>💬 15</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文章卡片 3 -->
+                <div class="article-card">
+                    <div class="article-image">🏛️</div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span>📅 2023-12-20</span>
+                            <span>📍 陕西·西安</span>
+                        </div>
+                        <h3 class="article-title">千年古都：西安历史文化探访</h3>
+                        <p class="article-excerpt">
+                            从兵马俑到大雁塔，从城墙到回民街。在这座十三朝古都，
+                            感受中华文明的厚重与辉煌...
+                        </p>
+                        <div class="article-stats">
+                            <span>👁️ 756</span>
+                            <span>❤️ 45</span>
+                            <span>💬 12</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文章卡片 4 -->
+                <div class="article-card">
+                    <div class="article-image">🌸</div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span>📅 2023-12-10</span>
+                            <span>📍 云南·大理</span>
+                        </div>
+                        <h3 class="article-title">风花雪月：大理古城慢生活</h3>
+                        <p class="article-excerpt">
+                            苍山洱海，风花雪月。在大理的日子里，时间似乎都慢了下来。
+                            这里有的是诗和远方...
+                        </p>
+                        <div class="article-stats">
+                            <span>👁️ 1,023</span>
+                            <span>❤️ 78</span>
+                            <span>💬 19</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文章卡片 5 -->
+                <div class="article-card">
+                    <div class="article-image">🚂</div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span>📅 2023-11-25</span>
+                            <span>📍 新疆·喀什</span>
+                        </div>
+                        <h3 class="article-title">丝路之旅：探访南疆风情</h3>
+                        <p class="article-excerpt">
+                            坐着火车穿越戈壁，来到祖国最西端。在喀什老城的巷子里，
+                            感受浓郁的西域风情...
+                        </p>
+                        <div class="article-stats">
+                            <span>👁️ 645</span>
+                            <span>❤️ 52</span>
+                            <span>💬 8</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文章卡片 6 -->
+                <div class="article-card">
+                    <div class="article-image">🌲</div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span>📅 2023-11-15</span>
+                            <span>📍 四川·九寨沟</span>
+                        </div>
+                        <h3 class="article-title">人间仙境：九寨沟秋色</h3>
+                        <p class="article-excerpt">
+                            秋天的九寨沟，是大自然调色板上最浓墨重彩的一笔。
+                            五彩斑斓的树林倒映在碧蓝的海子中...
+                        </p>
+                        <div class="article-stats">
+                            <span>👁️ 1,567</span>
+                            <span>❤️ 124</span>
+                            <span>💬 31</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 赞助者墙 -->
+    <section class="sponsors-section">
+        <div class="container">
+            <h2 class="section-title" style="color: var(--text-dark);">感谢赞助</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">
+                感谢以下朋友对旅行记录的支持，你们的鼓励是我继续前行的动力 ❤️
+            </p>
+            <div class="sponsors-grid">
+                <div class="sponsor-card">
+                    <div class="sponsor-avatar">👤</div>
+                    <div class="sponsor-name">张三</div>
+                    <div class="sponsor-amount">¥50</div>
+                </div>
+                <div class="sponsor-card">
+                    <div class="sponsor-avatar">👤</div>
+                    <div class="sponsor-name">李四</div>
+                    <div class="sponsor-amount">¥100</div>
+                </div>
+                <div class="sponsor-card">
+                    <div class="sponsor-avatar">👤</div>
+                    <div class="sponsor-name">王五</div>
+                    <div class="sponsor-amount">¥30</div>
+                </div>
+                <div class="sponsor-card">
+                    <div class="sponsor-avatar">👤</div>
+                    <div class="sponsor-name">赵六</div>
+                    <div class="sponsor-amount">¥88</div>
+                </div>
+                <div class="sponsor-card">
+                    <div class="sponsor-avatar">👤</div>
+                    <div class="sponsor-name">孙七</div>
+                    <div class="sponsor-amount">¥66</div>
+                </div>
+                <div class="sponsor-card">
+                    <div class="sponsor-avatar">👤</div>
+                    <div class="sponsor-name">周八</div>
+                    <div class="sponsor-amount">¥200</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>关于平台</h3>
+                <ul>
+                    <li><a href="#about">关于我们</a></li>
+                    <li><a href="#features">核心功能</a></li>
+                    <li><a href="#privacy">隐私政策</a></li>
+                    <li><a href="#terms">使用条款</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>快速链接</h3>
+                <ul>
+                    <li><a href="#articles">旅行文章</a></li>
+                    <li><a href="#timeline">时光轴</a></li>
+                    <li><a href="#map">轨迹地图</a></li>
+                    <li><a href="#photos">照片墙</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>联系方式</h3>
+                <ul>
+                    <li><a href="mailto:contact@example.com">📧 联系邮箱</a></li>
+                    <li><a href="#">📱 微信公众号</a></li>
+                    <li><a href="#">🐦 微博</a></li>
+                    <li><a href="#">📷 Instagram</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>技术支持</h3>
+                <p style="color: rgba(255,255,255,0.7); line-height: 1.8;">
+                    基于 Next.js + Supabase 构建<br>
+                    数据实时同步<br>
+                    支持多端访问
+                </p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 旅行轨迹记录平台. All rights reserved.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.875rem;">
+                🗺️ 记录旅途，分享精彩瞬间
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 标签页切换
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 卡片动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                    entry.target.style.opacity = '1';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stat-card, .article-card, .sponsor-card, .journey-card').forEach(el => {
+            el.style.opacity = '0';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
